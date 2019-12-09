@@ -1,0 +1,11 @@
+C:\Users\marcb\Documents\C#_Projects\Chat_Application\Chat_Application\ChatApp\Chat_Server\bin\Debug\Chat_Server.exe.config
+C:\Users\marcb\Documents\C#_Projects\Chat_Application\Chat_Application\ChatApp\Chat_Server\bin\Debug\Chat_Server.exe
+C:\Users\marcb\Documents\C#_Projects\Chat_Application\Chat_Application\ChatApp\Chat_Server\bin\Debug\Chat_Server.pdb
+C:\Users\marcb\Documents\C#_Projects\Chat_Application\Chat_Application\ChatApp\Chat_Server\obj\Debug\Chat_Server.Login.resources
+C:\Users\marcb\Documents\C#_Projects\Chat_Application\Chat_Application\ChatApp\Chat_Server\obj\Debug\Chat_Server.Properties.Resources.resources
+C:\Users\marcb\Documents\C#_Projects\Chat_Application\Chat_Application\ChatApp\Chat_Server\obj\Debug\Chat_Server.csproj.GenerateResource.cache
+C:\Users\marcb\Documents\C#_Projects\Chat_Application\Chat_Application\ChatApp\Chat_Server\obj\Debug\Chat_Server.exe
+C:\Users\marcb\Documents\C#_Projects\Chat_Application\Chat_Application\ChatApp\Chat_Server\obj\Debug\Chat_Server.pdb
+C:\Users\marcb\Documents\C#_Projects\Chat_Application\Chat_Application\ChatApp\Chat_Server\obj\Debug\Chat_Server.csprojAssemblyReference.cache
+C:\Users\marcb\Documents\C#_Projects\Chat_Application\Chat_Application\ChatApp\Chat_Server\obj\Debug\Chat_Server.Register.resources
+C:\Users\marcb\Documents\C#_Projects\Chat_Application\Chat_Application\ChatApp\Chat_Server\obj\Debug\Chat_Server.ChatWindow.resources
