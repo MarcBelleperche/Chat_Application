@@ -10,11 +10,11 @@ namespace ChatApp
     public class Client
     {
         public TcpClient _tcpclient;
-        public Channel channel;
+        public Channels active_channels;
 
-        public Client(TcpClient client, Channel channel)
+        public Client(TcpClient client)
         {
-            this.channel = channel;
+            this.active_channels = new Channels();
             this._tcpclient = client;
         }
     }

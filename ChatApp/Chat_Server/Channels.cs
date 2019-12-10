@@ -10,14 +10,11 @@ namespace Chat_Server
     public class Channels
     {
         public List<Channel> _channels;
-        Channel defaut;
-        Channel nitro;
-
         public Channels()
         {
             _channels = new List<Channel>();
-            _channels.Add(defaut = new Channel("default", 5000));
-            _channels.Add(nitro = new Channel("Nitro Gaming", 5001));
+            _channels.Add(new Channel("Default"));
+            _channels.Add(new Channel("Nitro Gaming"));
         }
     }
 }

@@ -9,27 +9,25 @@ using System.Threading.Tasks;
 
 namespace ChatApp
 {
-    class Channels
+    public class Channels
     {
         public List<Channel> _channels;
 
         public Channels()
         {
             _channels = new List<Channel>();
-            _channels.Add(new Channel("default", 5000));
-            _channels.Add(new Channel("Radio sexe", 5001));
-            _channels.Add(new Channel("NitroGaming", 5002));
-            InitializeChannels();
+            _channels.Add(new Channel("Default"));
         }
 
-        private void InitializeChannels()
+/*        private void InitializeChannels()
         {
             foreach (Channel c in _channels)
             {
-                c.Connection(c.port);
+                Console.WriteLine(c._name);
+                c.Connection(c.port, c._name);
             }
         }
-
+*/
         public void serialize(Channels channels)
         {
             IFormatter formatter = new BinaryFormatter();

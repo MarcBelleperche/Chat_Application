@@ -21,7 +21,7 @@ namespace Chat_Server
         Client current;
 
 
-        static readonly Dictionary<String, TcpClient> active_channels = new Dictionary<String, TcpClient>();
+        //static readonly Dictionary<String, TcpClient> active_channels = new Dictionary<String, TcpClient>();
 
         public ChatWindow()
         {
@@ -35,10 +35,12 @@ namespace Chat_Server
 
             this.current = current;
 
-            InitializeChannels(current);
+            this.client = Initialize(current);
+
+            //current._currentchannel = current._clientschannels._channels[0];
 
 
-            this.client = active_channels.Values.ElementAt(0);
+            //this.client = active_channels.Values.ElementAt(0);
 
             LauchingConnection(this.client);
 
@@ -64,7 +66,7 @@ namespace Chat_Server
             //sW.WriteLine(channel);
             // Send the username
 
-            sW.WriteLine(current._name);
+            //sW.WriteLine(current._name);
 
             Thread thread = new Thread(o => ReceiveData((TcpClient)o));
 
@@ -78,46 +80,67 @@ namespace Chat_Server
 
             //Console.ReadKey();
         }
-        private void InitializeChannels(Client current)
+        private TcpClient Initialize(Client current)
         {
-            int count = 0;
-            foreach (Channel c in current._clientschannels._channels)
-            {
-                TcpClient client = new TcpClient();
-                current._currentchannel = current._clientschannels._channels[0];
-                Console.WriteLine(current._currentchannel._port);
-                Console.WriteLine(current.GetIp());
+            TcpClient client;
+            current._currentchannel = current._clientschannels._channels[0];
+            Console.WriteLine(5000);
+            Console.WriteLine(current.GetIp());
 
-                try
-                {
-                    client.Connect(current.GetIp(), current._currentchannel._port);
-                    active_channels.Add(c._name, client);
-                    channels_list.Items.Add(c._name);
-                    count++;
-                    Console.WriteLine(c._name);
-                }
-                catch (SocketException)
-                {
-                    Console.WriteLine("Channel do not exist");
-                }
-               
+             foreach (Channel c in current._clientschannels._channels)
+             {
+                     //active_channels.Add(c._name, client);
+                     channels_list.Items.Add(c._name);
+                     Console.WriteLine(c._name);
+             }
+
+            client = new TcpClient();
+            try
+            {
+                client.Connect(current.GetIp(), 5000);
+                ////active_channels.Add(c._name, client);
             }
+            catch (SocketException)
+            {
+                Console.WriteLine("Channel do not exist");
+            }
+
+            return client;
         }
 
          void ReceiveData(TcpClient client)
         {
             NetworkStream ns = client.GetStream();
-            byte[] receivedBytes = new byte[1024];
+
+            byte[] datarecieved = new byte[1024];
             int byte_count;
 
-            while ((byte_count = ns.Read(receivedBytes, 0, receivedBytes.Length)) > 0)
-            {
-                string msg = Encoding.ASCII.GetString(receivedBytes, 0, byte_count);
-                Console.Write(Encoding.ASCII.GetString(receivedBytes, 0, byte_count));
-                this.AppendText(msg, false);
+            string channel = "";
 
-                //rt_chat_text.Text = msg;
+            int chan = 0;
+
+            while ((byte_count = ns.Read(datarecieved, 0, datarecieved.Length)) > 0)
+            {
+
+                string data = Encoding.ASCII.GetString(datarecieved, 0, byte_count);
+                //Console.Write(Encoding.ASCII.GetString(datarecieved, 0, byte_count));
+
+                if (chan == 0)
+                {
+                    channel = data;
+                    Console.WriteLine("Message pret a etre ecrit sur le channel : "+channel);
+                    chan++;
+                }
+                else if (chan == 1)
+                {
+                    Console.WriteLine("Le channel courant est :" + current._currentchannel._name);
+                    if (channel == current._currentchannel._name)
+                    { this.AppendText(data, false); }
+                        chan = 0;
+                }
+               
             }
+      
         }
 
         public void AppendText(string what, bool debug = false)
@@ -150,10 +173,16 @@ namespace Chat_Server
 
             else
             {
+                string current_channel_name = current._currentchannel._name;
+                byte[] bufferchannel = Encoding.ASCII.GetBytes(current_channel_name);
+
                 string print = current._name.ToUpper() + " : " + send_message.Text + "\n";
                 byte[] buffer = Encoding.ASCII.GetBytes(print);
+
                 //byte[] bufferuser = Encoding.ASCII.GetBytes(current._name);
                 //ns.Write(bufferuser, 0, bufferuser.Length);
+                ns.Write(bufferchannel, 0, bufferchannel.Length);
+
                 ns.Write(buffer, 0, buffer.Length);
                 //string print = current._name.ToUpper() + " : " + send_message.Text + "\n";
                 this.AppendText(print, false);
@@ -168,26 +197,15 @@ namespace Chat_Server
 
         private void channels_list_SelectedIndexChanged(object sender, EventArgs e)
         {
-            int count = 0;
             string current_channel = (String)channels_list.SelectedItem;
             Console.WriteLine(current_channel);
-            /* foreach(Channel channel in current._clientschannels._channels)
-             {
-                 if (current_channel == channel._name)
-                 {
-                     break;
-                 }
-                 else count++;
-             }*/
-
-            foreach (String name in active_channels.Keys)
+            foreach(Channel c in current._clientschannels._channels)
             {
-                if (current_channel == name) 
+                if (current_channel == c._name)
                 {
-                    client = active_channels[name];
-                    LauchingConnection(client);
+                    current._currentchannel = c;
                 }
-            }
+            }            
         }
     }
 }
