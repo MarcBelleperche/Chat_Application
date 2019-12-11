@@ -32,7 +32,7 @@
             this.send_message = new System.Windows.Forms.TextBox();
             this.send = new System.Windows.Forms.Button();
             this.port_to_connect = new System.Windows.Forms.TextBox();
-            this.channels = new System.Windows.Forms.ComboBox();
+            this.channels_to_select = new System.Windows.Forms.ComboBox();
             this.Connect_new_channel = new System.Windows.Forms.Button();
             this.channels_list = new System.Windows.Forms.ListBox();
             this.info = new System.Windows.Forms.Label();
@@ -73,14 +73,15 @@
             this.port_to_connect.TabIndex = 3;
             this.port_to_connect.Text = "port to connect";
             // 
-            // channels
+            // channels_to_select
             // 
-            this.channels.FormattingEnabled = true;
-            this.channels.Location = new System.Drawing.Point(537, 54);
-            this.channels.Name = "channels";
-            this.channels.Size = new System.Drawing.Size(121, 24);
-            this.channels.TabIndex = 4;
-            this.channels.Text = "Choose channel";
+            this.channels_to_select.FormattingEnabled = true;
+            this.channels_to_select.Location = new System.Drawing.Point(537, 54);
+            this.channels_to_select.Name = "channels_to_select";
+            this.channels_to_select.Size = new System.Drawing.Size(121, 24);
+            this.channels_to_select.TabIndex = 4;
+            this.channels_to_select.Text = "Choose channel";
+            this.channels_to_select.SelectedIndexChanged += new System.EventHandler(this.channels_to_select_SelectedIndexChanged);
             // 
             // Connect_new_channel
             // 
@@ -90,6 +91,7 @@
             this.Connect_new_channel.TabIndex = 5;
             this.Connect_new_channel.Text = "Connect";
             this.Connect_new_channel.UseVisualStyleBackColor = true;
+            this.Connect_new_channel.Click += new System.EventHandler(this.Connect_new_channel_Click);
             // 
             // channels_list
             // 
@@ -118,7 +120,7 @@
             this.Controls.Add(this.info);
             this.Controls.Add(this.channels_list);
             this.Controls.Add(this.Connect_new_channel);
-            this.Controls.Add(this.channels);
+            this.Controls.Add(this.channels_to_select);
             this.Controls.Add(this.port_to_connect);
             this.Controls.Add(this.send);
             this.Controls.Add(this.send_message);
@@ -136,7 +138,7 @@
         private System.Windows.Forms.TextBox send_message;
         private System.Windows.Forms.Button send;
         private System.Windows.Forms.TextBox port_to_connect;
-        private System.Windows.Forms.ComboBox channels;
+        private System.Windows.Forms.ComboBox channels_to_select;
         private System.Windows.Forms.Button Connect_new_channel;
         private System.Windows.Forms.ListBox channels_list;
         private System.Windows.Forms.Label info;

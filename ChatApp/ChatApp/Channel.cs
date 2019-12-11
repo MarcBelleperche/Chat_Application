@@ -8,6 +8,7 @@ using System.Threading;
 
 namespace ChatApp
 {
+    [Serializable]
     public class Channel
     {
 

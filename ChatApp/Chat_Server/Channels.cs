@@ -14,7 +14,6 @@ namespace Chat_Server
         {
             _channels = new List<Channel>();
             _channels.Add(new Channel("Default"));
-            _channels.Add(new Channel("Nitro Gaming"));
         }
     }
 }

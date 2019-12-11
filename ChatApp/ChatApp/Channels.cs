@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace ChatApp
 {
+    [Serializable]
     public class Channels
     {
         public List<Channel> _channels;

@@ -6,6 +6,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -53,8 +54,8 @@ namespace Chat_Server
         {
             this.ns = client.GetStream();
 
-            StreamWriter sW = new StreamWriter(client.GetStream());
-            sW.AutoFlush = true;
+           /* StreamWriter sW = new StreamWriter(client.GetStream());
+            sW.AutoFlush = true;*/
 
             // StreamReader sR = new StreamReader(client.GetStream());
             //Console.WriteLine("Flag 2");
@@ -99,6 +100,7 @@ namespace Chat_Server
             {
                 client.Connect(current.GetIp(), 5000);
                 ////active_channels.Add(c._name, client);
+                GetServerChannels(client);
             }
             catch (SocketException)
             {
@@ -106,6 +108,16 @@ namespace Chat_Server
             }
 
             return client;
+        }
+
+        public void GetServerChannels(TcpClient client)
+        {
+            BinaryFormatter formatter = new BinaryFormatter();
+            List<string> channels = (List<string>)formatter.Deserialize(client.GetStream());
+            foreach (String name in channels)
+            {
+                channels_to_select.Items.Add(name);
+            }
         }
 
          void ReceiveData(TcpClient client)
@@ -134,8 +146,14 @@ namespace Chat_Server
                 else if (chan == 1)
                 {
                     Console.WriteLine("Le channel courant est :" + current._currentchannel._name);
-                    if (channel == current._currentchannel._name)
-                    { this.AppendText(data, false); }
+                    Console.WriteLine("Le channel a comparé est : " + channel);
+                    //Console.WriteLine((Equals(current._currentchannel._name, "Default")));
+                    channel = channel.Trim();
+                    if (Equals(channel, current._currentchannel._name) == true)
+                    {
+                        Console.WriteLine("I am in ...");
+                        this.AppendText(data, false);
+                    }
                         chan = 0;
                 }
                
@@ -173,17 +191,34 @@ namespace Chat_Server
 
             else
             {
-                string current_channel_name = current._currentchannel._name;
-                byte[] bufferchannel = Encoding.ASCII.GetBytes(current_channel_name);
+                byte[] check = new byte[1024];
 
+                string action = "msg";
+                byte[] action_buffer = Encoding.ASCII.GetBytes(action);
+
+                /*byte[] bufferchannel = Encoding.ASCII.GetBytes(current_channel_name);*/
+
+                string current_channel_name = current._currentchannel._name;
                 string print = current._name.ToUpper() + " : " + send_message.Text + "\n";
-                byte[] buffer = Encoding.ASCII.GetBytes(print);
+                byte[] buffer = Encoding.ASCII.GetBytes(current_channel_name +","+ print);
 
                 //byte[] bufferuser = Encoding.ASCII.GetBytes(current._name);
                 //ns.Write(bufferuser, 0, bufferuser.Length);
-                ns.Write(bufferchannel, 0, bufferchannel.Length);
+
+                ns.Write(action_buffer, 0, action_buffer.Length);
+
+                /* if (channel_byte_count_u == 0)
+                 {
+                     break;
+                 }*/
+/*                int check_ok = ns.Read(check, 0, check.Length);
+                string ok = Encoding.ASCII.GetString(check, 0, check_ok);
+                Console.WriteLine(ok);*/
+
+               // ns.Write(bufferchannel, 0, bufferchannel.Length);
 
                 ns.Write(buffer, 0, buffer.Length);
+
                 //string print = current._name.ToUpper() + " : " + send_message.Text + "\n";
                 this.AppendText(print, false);
                 //rt_chat_text.Text = rt_chat_text.Text  + current._name.ToUpper()+" : "+ send_message.Text + "\n";
@@ -204,8 +239,30 @@ namespace Chat_Server
                 if (current_channel == c._name)
                 {
                     current._currentchannel = c;
+                    Console.WriteLine("Current changed to : "+c._name);
                 }
             }            
+        }
+
+        private void channels_to_select_SelectedIndexChanged(object sender, EventArgs e)
+        {
+        }
+
+        private void Connect_new_channel_Click(object sender, EventArgs e)
+        {
+            NetworkStream ns = client.GetStream();
+
+            string action = "conn";
+            byte[] action_buffer = Encoding.ASCII.GetBytes(action);
+            ns.Write(action_buffer, 0, action_buffer.Length);
+
+            string new_connexion_channel = (String)channels_to_select.SelectedItem;
+            byte[] new_channel = Encoding.ASCII.GetBytes(new_connexion_channel);
+            ns.Write(new_channel, 0, new_channel.Length);
+
+            channels_list.Items.Add(new_connexion_channel);
+            current._clientschannels._channels.Add(new Channel(new_connexion_channel));
+
         }
     }
 }
