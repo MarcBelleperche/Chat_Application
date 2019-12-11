@@ -15,6 +15,8 @@ namespace Chat_Server
         public Register()
         {
             InitializeComponent();
+            password.PasswordChar = '\u25CF';
+            psw.PasswordChar = '\u25CF';
         }
 
         private void register_but_Click(object sender, EventArgs e)

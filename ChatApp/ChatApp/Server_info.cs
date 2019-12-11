@@ -35,15 +35,17 @@ namespace ChatApp
             InitializeComponent();
 
             server_channels = new Channels();
-            server_channels._channels.Add(new Channel("Radio sexe"));
+            server_channels._channels.Add(new Channel("Les Gentlemen du sexe"));
             server_channels._channels.Add(new Channel("Nitro Gaming"));
+            server_channels._channels.Add(new Channel("VIVE les glups"));
+            server_channels._channels.Add(new Channel("ITF PROMO 2021"));
 
 
             Connection(5000);
 
             //Instancing objetcs
             //Here strats the main secction
-           
+
 
         }
 
@@ -68,12 +70,14 @@ namespace ChatApp
                 Console.WriteLine("Client number : " + count + " connected!!");
 
                 // ATTENTION MOFIF ------------------------------------------------------------------------------------
+                // HERE I SEND ALL THE SERVER ACCESSIBLE CHANNEL
                 List<string> string_server_channels = Convert_to_string();
 
                 BinaryFormatter bf = new BinaryFormatter();
                 bf.Serialize(client._tcpclient.GetStream(), string_server_channels);
 
                 //-----------------------------------------------------------------------------------------------------
+
                 //ChooseCorP();
 
                 //New thread for the client connected
@@ -100,7 +104,7 @@ namespace ChatApp
             int id = (int)o;
             TcpClient client;
 
-           
+
             lock (_lock) client = list_clients[id]._tcpclient;
 
 
@@ -118,7 +122,7 @@ namespace ChatApp
                 //StreamReader sR = new StreamReader(client.GetStream());
                 ///string username = sR.ReadLine().ToUpper();
                 //string username = "FIONA";
-                
+
                 NetworkStream stream = client.GetStream();
 
                 //string username = "<" + sR.ReadLine().ToUpper() + ">";
@@ -142,8 +146,61 @@ namespace ChatApp
                      break;
                  }*/
 
+                string[] separator = { "," };
+                int count = 2;
+                string[] actions = action.Split(separator, count, StringSplitOptions.RemoveEmptyEntries);
+                Console.WriteLine(actions[0]);
 
 
+                if (Equals(actions[0].Trim(), "newbie") == true)
+                {
+                    //action[1] = action[1].Trim();
+                    //data = data.ToUpper();
+                    list_clients[id]._name = actions[1];
+                    Console.WriteLine(actions[1]);
+                    addnewbie(actions[1], client);
+                }
+
+               /* else if (Equals(actions[0].Trim(), "get_text")== true)
+                {
+                    byte[] buffer = new byte[1024];
+                    int byte_count = stream.Read(buffer, 0, buffer.Length);
+                    string data = Encoding.ASCII.GetString(buffer, 0, byte_count);
+
+
+                    if (byte_count == 0)
+                    {
+                        break;
+                    }
+
+                    foreach (Channel c in list_clients[id].active_channels._channels)
+                    {
+                        Console.WriteLine("The get text is ok :"+actions[0]);
+                        Console.WriteLine("The channel we want to get text of :" + data);
+                        //Console.WriteLine(actions[1]);
+                        if (Equals(c._name, data)==true)
+                        {
+                            Console.WriteLine("Transmission du text du channel :"+ c._name);
+                            send_channel_text(c._channel_text, client); ;
+                        }
+                    }
+                }*/
+
+                /* else if(Equals(actions[0].Trim(), "gct") == true)
+                 {
+
+                     BinaryFormatter bf = new BinaryFormatter();
+                     foreach(Channel c in list_clients[id].active_channels._channels)
+                     {
+                         if (Equals(c._name,actions[1].Trim()) == true) 
+                         {
+                             bf.Serialize(client.GetStream(), c._channel_rt);
+                         }
+                     }
+                 }*/
+
+                else
+                {
                     byte[] buffer = new byte[1024];
                     int byte_count = stream.Read(buffer, 0, buffer.Length);
 
@@ -153,27 +210,40 @@ namespace ChatApp
                     }
 
 
-                    string data = Encoding.ASCII.GetString(buffer, 0, byte_count);
-
-                if (Equals(action.Trim(), "msg") == true)
-                {
-                    string[] separator = { "," };
-                    int count = 2;
-                    string[] separeted = data.Split(separator, count, StringSplitOptions.RemoveEmptyEntries);
-                    string channel = separeted[0];
-                    data = separeted[1];
-                    Console.WriteLine("Le message a ete bien recu, le channel est :" + channel + " message : " + data);
-                    broadcast(data, client, channel);
-                }
-                else if (Equals(action.Trim(), "conn") == true)
-                {
-                    Client c = list_clients[id];
-                    foreach (Channel channel in server_channels._channels)
+                    else if (Equals(action.Trim(), "msg") == true)
                     {
-                        if (Equals(channel._name , data.Trim())== true)
+                        string data = Encoding.ASCII.GetString(buffer, 0, byte_count);
+
+
+                        string[] separeted = data.Split(separator, count, StringSplitOptions.RemoveEmptyEntries);
+                        string channel = separeted[0];
+                        data = separeted[1];
+                        Console.WriteLine("Le message a ete bien recu, le channel est :" + channel + " message : " + data);
+                        foreach (Channel c in list_clients[id].active_channels._channels)
                         {
-                            c.active_channels._channels.Add(channel);
-                            Console.WriteLine("Channel "+channel._name +" added to the active clients");
+                            if (Equals(channel.Trim(), c._name))
+                            {
+                                DateTime timestamp = DateTime.Now;
+                                c._channel_text = c._channel_text + timestamp.ToLongTimeString() + "\t" + data + Environment.NewLine;
+
+                            }
+                        }
+                        broadcast(data, client, channel);
+                    }
+
+
+                    else if (Equals(action.Trim(), "conn") == true)
+                    {
+                        string data = Encoding.ASCII.GetString(buffer, 0, byte_count);
+
+                        Client c = list_clients[id];
+                        foreach (Channel channel in server_channels._channels)
+                        {
+                            if (Equals(channel._name, data.Trim()) == true)
+                            {
+                                c.active_channels._channels.Add(channel);
+                                Console.WriteLine("Channel " + channel._name + " added to the active clients");
+                            }
                         }
                     }
                 }
@@ -218,10 +288,11 @@ namespace ChatApp
                     if (cou != nosend)
                     {
                         Console.WriteLine("Message pret a etre envoye");
-                        foreach (Channel chan in c.active_channels._channels) {
+                        foreach (Channel chan in c.active_channels._channels)
+                        {
                             if (chan._name == channel.Trim())
                             {
-                                Console.WriteLine("Nous pouvons envoyé sur le channel :" +chan._name);
+                                Console.WriteLine("Nous pouvons envoyé sur le channel :" + chan._name);
                                 NetworkStream stream = cou.GetStream();
                                 //stream.Write(bufferuser, 0, bufferuser.Length);
                                 stream.Write(bufferchannel, 0, bufferchannel.Length);
@@ -233,8 +304,48 @@ namespace ChatApp
             }
         }
 
+        public static void send_channel_text(string data, TcpClient send)
+        {
+            byte[] buffer = Encoding.ASCII.GetBytes(data);
+            byte[] bufferchannel = Encoding.ASCII.GetBytes("get_text");
 
+            lock (_lock)
+            {
+                NetworkStream stream = send.GetStream();
+                //stream.Write(bufferuser, 0, bufferuser.Length);
+                stream.Write(bufferchannel, 0, bufferchannel.Length);
+                stream.Write(buffer, 0, buffer.Length);
+            }
+        }
 
+        public static void addnewbie(string data, TcpClient nosend)
+        {
+            //byte[] buffer = Encoding.ASCII.GetBytes(author + " : "+data + Environment.NewLine);
+            byte[] buffer = Encoding.ASCII.GetBytes(data);
+            byte[] bufferchannel = Encoding.ASCII.GetBytes("newbie");
+
+            //byte[] bufferuser = Encoding.ASCII.GetBytes(author + Environment.NewLine);
+
+            lock (_lock)
+            {
+                foreach (Client c in list_clients.Values)
+                {
+                    //string channel = c.channel._name;
+                    //if (channel == commchan ) {
+                    TcpClient cou = c._tcpclient;
+                    if (cou != nosend)
+                    {
+
+                        Console.WriteLine("Transfert et ajout du client :" + data);
+                        NetworkStream stream = cou.GetStream();
+                        //stream.Write(bufferuser, 0, bufferuser.Length);
+                        stream.Write(bufferchannel, 0, bufferchannel.Length);
+                        stream.Write(buffer, 0, buffer.Length);
+
+                    }
+                }
+            }
+        }
 
         private void label1_Click(object sender, EventArgs e)
         {

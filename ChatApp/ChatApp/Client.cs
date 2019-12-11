@@ -11,6 +11,7 @@ namespace ChatApp
     {
         public TcpClient _tcpclient;
         public Channels active_channels;
+        public String _name;
 
         public Client(TcpClient client)
         {

@@ -19,6 +19,7 @@ namespace Chat_Server
         public Login()
         {
             InitializeComponent();
+            password.PasswordChar = '\u25CF';
         }
 
         private void Login_Load(object sender, EventArgs e)
@@ -82,5 +83,10 @@ namespace Chat_Server
             Register register = new Register();
             register.Show();
         }
-}
+
+        private void password_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+    }
 }

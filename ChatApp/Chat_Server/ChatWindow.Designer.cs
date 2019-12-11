@@ -31,11 +31,14 @@
             this.rt_chat_text = new System.Windows.Forms.RichTextBox();
             this.send_message = new System.Windows.Forms.TextBox();
             this.send = new System.Windows.Forms.Button();
-            this.port_to_connect = new System.Windows.Forms.TextBox();
             this.channels_to_select = new System.Windows.Forms.ComboBox();
             this.Connect_new_channel = new System.Windows.Forms.Button();
             this.channels_list = new System.Windows.Forms.ListBox();
             this.info = new System.Windows.Forms.Label();
+            this.client_to_connect = new System.Windows.Forms.ComboBox();
+            this.check_private = new System.Windows.Forms.RadioButton();
+            this.check_channel = new System.Windows.Forms.RadioButton();
+            this.private_list = new System.Windows.Forms.ListBox();
             this.SuspendLayout();
             // 
             // rt_chat_text
@@ -64,28 +67,19 @@
             this.send.UseVisualStyleBackColor = true;
             this.send.Click += new System.EventHandler(this.send_Click);
             // 
-            // port_to_connect
-            // 
-            this.port_to_connect.ForeColor = System.Drawing.SystemColors.ActiveBorder;
-            this.port_to_connect.Location = new System.Drawing.Point(390, 56);
-            this.port_to_connect.Name = "port_to_connect";
-            this.port_to_connect.Size = new System.Drawing.Size(100, 22);
-            this.port_to_connect.TabIndex = 3;
-            this.port_to_connect.Text = "port to connect";
-            // 
             // channels_to_select
             // 
             this.channels_to_select.FormattingEnabled = true;
-            this.channels_to_select.Location = new System.Drawing.Point(537, 54);
+            this.channels_to_select.Location = new System.Drawing.Point(490, 35);
             this.channels_to_select.Name = "channels_to_select";
-            this.channels_to_select.Size = new System.Drawing.Size(121, 24);
+            this.channels_to_select.Size = new System.Drawing.Size(124, 24);
             this.channels_to_select.TabIndex = 4;
             this.channels_to_select.Text = "Choose channel";
             this.channels_to_select.SelectedIndexChanged += new System.EventHandler(this.channels_to_select_SelectedIndexChanged);
             // 
             // Connect_new_channel
             // 
-            this.Connect_new_channel.Location = new System.Drawing.Point(694, 54);
+            this.Connect_new_channel.Location = new System.Drawing.Point(682, 36);
             this.Connect_new_channel.Name = "Connect_new_channel";
             this.Connect_new_channel.Size = new System.Drawing.Size(75, 23);
             this.Connect_new_channel.TabIndex = 5;
@@ -99,7 +93,7 @@
             this.channels_list.ItemHeight = 16;
             this.channels_list.Location = new System.Drawing.Point(12, 12);
             this.channels_list.Name = "channels_list";
-            this.channels_list.Size = new System.Drawing.Size(113, 436);
+            this.channels_list.Size = new System.Drawing.Size(120, 196);
             this.channels_list.TabIndex = 6;
             this.channels_list.SelectedIndexChanged += new System.EventHandler(this.channels_list_SelectedIndexChanged);
             // 
@@ -112,16 +106,62 @@
             this.info.TabIndex = 7;
             this.info.Text = "infos";
             // 
+            // client_to_connect
+            // 
+            this.client_to_connect.FormattingEnabled = true;
+            this.client_to_connect.Location = new System.Drawing.Point(316, 35);
+            this.client_to_connect.Name = "client_to_connect";
+            this.client_to_connect.Size = new System.Drawing.Size(121, 24);
+            this.client_to_connect.TabIndex = 8;
+            this.client_to_connect.Text = "Choose client ";
+            this.client_to_connect.UseWaitCursor = true;
+            // 
+            // check_private
+            // 
+            this.check_private.AutoSize = true;
+            this.check_private.Location = new System.Drawing.Point(316, 66);
+            this.check_private.Name = "check_private";
+            this.check_private.Size = new System.Drawing.Size(73, 21);
+            this.check_private.TabIndex = 9;
+            this.check_private.TabStop = true;
+            this.check_private.Text = "Private";
+            this.check_private.UseVisualStyleBackColor = true;
+            this.check_private.CheckedChanged += new System.EventHandler(this.check_private_CheckedChanged);
+            // 
+            // check_channel
+            // 
+            this.check_channel.AutoSize = true;
+            this.check_channel.Location = new System.Drawing.Point(490, 66);
+            this.check_channel.Name = "check_channel";
+            this.check_channel.Size = new System.Drawing.Size(81, 21);
+            this.check_channel.TabIndex = 10;
+            this.check_channel.TabStop = true;
+            this.check_channel.Text = "Channel";
+            this.check_channel.UseVisualStyleBackColor = true;
+            this.check_channel.CheckedChanged += new System.EventHandler(this.check_channel_CheckedChanged);
+            // 
+            // private_list
+            // 
+            this.private_list.FormattingEnabled = true;
+            this.private_list.ItemHeight = 16;
+            this.private_list.Location = new System.Drawing.Point(12, 231);
+            this.private_list.Name = "private_list";
+            this.private_list.Size = new System.Drawing.Size(120, 212);
+            this.private_list.TabIndex = 11;
+            // 
             // ChatWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.private_list);
+            this.Controls.Add(this.check_channel);
+            this.Controls.Add(this.check_private);
+            this.Controls.Add(this.client_to_connect);
             this.Controls.Add(this.info);
             this.Controls.Add(this.channels_list);
             this.Controls.Add(this.Connect_new_channel);
             this.Controls.Add(this.channels_to_select);
-            this.Controls.Add(this.port_to_connect);
             this.Controls.Add(this.send);
             this.Controls.Add(this.send_message);
             this.Controls.Add(this.rt_chat_text);
@@ -137,10 +177,13 @@
         private System.Windows.Forms.RichTextBox rt_chat_text;
         private System.Windows.Forms.TextBox send_message;
         private System.Windows.Forms.Button send;
-        private System.Windows.Forms.TextBox port_to_connect;
         private System.Windows.Forms.ComboBox channels_to_select;
         private System.Windows.Forms.Button Connect_new_channel;
         private System.Windows.Forms.ListBox channels_list;
         private System.Windows.Forms.Label info;
+        private System.Windows.Forms.ComboBox client_to_connect;
+        private System.Windows.Forms.RadioButton check_private;
+        private System.Windows.Forms.RadioButton check_channel;
+        private System.Windows.Forms.ListBox private_list;
     }
 }
