@@ -35,9 +35,10 @@ namespace Chat_Server
 
                 //Clients clients = Clients.deserialize();
                 Clients clients = new Clients();
-                clients._clients.Add(client);
+                Clients toser = clients.deserialize();
+                toser._clients.Add(client);
 
-                clients.serialize(clients);
+                toser.serialize(toser);
                 this.Dispose();
             }
             //if (password.StringValue == passwordcheck.StringValue) {

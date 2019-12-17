@@ -15,8 +15,8 @@ namespace Chat_Server
 
         public Clients()
         {
-            this._clients = new List<Client>();
-            _clients.Add(new Client("Fiona", "youyou"));
+/*            this._clients = new List<Client>();
+            _clients.Add(new Client("Marc", "marc"));*/
         }
 
         public void serialize(Clients clients)
@@ -28,7 +28,7 @@ namespace Chat_Server
             stream.Close();
         }
 
-        public static Clients deserialize()
+        public Clients deserialize()
         {
             IFormatter formatter = new BinaryFormatter();
             //We call the .bin file 

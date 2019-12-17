@@ -66,7 +66,8 @@ namespace Chat_Server
             //Clients check = new Clients();
             //Clients list = check.deserialize();
             Client use = null;
-            Clients c = Clients.deserialize();
+            Clients todesr = new Clients();
+            Clients c = todesr.deserialize();
             //Console.WriteLine("Enter your username :");
             string user_name = username.Text;
             //Console.WriteLine("Enter your password :");

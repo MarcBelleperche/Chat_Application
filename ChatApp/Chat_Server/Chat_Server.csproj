@@ -56,6 +56,8 @@
     <Compile Include="ChatWindow.Designer.cs">
       <DependentUpon>ChatWindow.cs</DependentUpon>
     </Compile>
+    <Compile Include="Private.cs" />
+    <Compile Include="Privates.cs" />
     <Compile Include="Register.cs">
       <SubType>Form</SubType>
     </Compile>

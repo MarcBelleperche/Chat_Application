@@ -13,7 +13,7 @@ namespace ChatApp
         public Channel(string name)
         {
             this._name = name;
-            this._channel_text = "";
+            this._channel_text = "Welcome on the "+_name+" channel" + Environment.NewLine;
         }
 
     }

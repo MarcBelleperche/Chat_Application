@@ -49,6 +49,8 @@
     <Compile Include="Channel.cs" />
     <Compile Include="Channels.cs" />
     <Compile Include="Client.cs" />
+    <Compile Include="Private.cs" />
+    <Compile Include="Privates.cs" />
     <Compile Include="Server_info.cs">
       <SubType>Form</SubType>
     </Compile>

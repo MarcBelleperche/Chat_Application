@@ -15,19 +15,22 @@ namespace Chat_Server
         public string _password;
         public Channel _currentchannel;
         public Channels _clientschannels;
+        public Private _currentprivate;
+        public Privates _clientsprivate;
         IPAddress ip;
 
         public Client(string name, string psw)
         {
             _clientschannels = new Channels();
+            _clientsprivate = new Privates();
 
             this._name = name;
             this._password = psw;
-            foreach (Channel c in _clientschannels._channels)
+           /* foreach (Channel c in _clientschannels._channels)
             {
-                Console.WriteLine(c._name +"youyou");
+                Console.WriteLine(c._name);
                 //if (c._name == "defaut") this._currentchannel = c;
-            }
+            }*/
 
             this.ip = IPAddress.Parse("127.0.0.1");
 

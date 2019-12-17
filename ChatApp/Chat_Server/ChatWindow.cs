@@ -34,6 +34,7 @@ namespace Chat_Server
            
             InitializeComponent();
             InitCheck();
+            //RichInit();
 
             this.current = current;
 
@@ -54,6 +55,7 @@ namespace Chat_Server
         private void LauchingConnection(TcpClient client)
         {
             this.ns = client.GetStream();
+            
 
            /* StreamWriter sW = new StreamWriter(client.GetStream());
             sW.AutoFlush = true;*/
@@ -86,8 +88,9 @@ namespace Chat_Server
         {
             TcpClient client;
             current._currentchannel = current._clientschannels._channels[0];
-            Console.WriteLine(5000);
+            //Console.WriteLine(5000);
             Console.WriteLine(current.GetIp());
+
 
              foreach (Channel c in current._clientschannels._channels)
              {
@@ -97,6 +100,7 @@ namespace Chat_Server
              }
 
             client = new TcpClient();
+
             try
             {
                 client.Connect(current.GetIp(), 5000);
@@ -150,19 +154,29 @@ namespace Chat_Server
                 else if (chan == 1)
                 {
                     string action_to_do = channel.Trim();
+                    Console.WriteLine("ACTION TO DO :"+action_to_do);
                     if (Equals(action_to_do, "newbie") == true)
                     {
                         //client_to_connect.Items.Add(data.Trim());
                         Console.WriteLine("CLient to connect add "+ data.Trim());
+                        Appendnewprivate(data.Trim());
                         chan = 0;
                     }
 
-/*                    else if(Equals(action_to_do, "get_text") == true)
+                    else if (Equals(action_to_do, "get_text") == true)
                     {
-                        //rt_chat_text.Text = data;
-                        this.AppendText(data, false);
+                        //client_to_connect.Items.Add(data.Trim());
+                        //Console.WriteLine("Setting text " + data.Trim());
+                        SetText(data.Trim(), false);
+                        chan = 0;
                     }
-*/
+
+                    /*                    else if(Equals(action_to_do, "get_text") == true)
+                                        {
+                                            //rt_chat_text.Text = data;
+                                            this.AppendText(data, false);
+                                        }
+                    */
                     else
                     {
                         Console.WriteLine("Le channel courant est :" + current._currentchannel._name);
@@ -174,6 +188,13 @@ namespace Chat_Server
                             Console.WriteLine("I am in ...");
                             this.AppendText(data, false);
                         }
+
+                        else if (Equals(channel, current._currentprivate)==true)
+                        {
+                            Console.WriteLine("Got it ...");
+                            this.AppendText(data, false);
+                        }
+
                         chan = 0;
                     }
                 }
@@ -196,6 +217,40 @@ namespace Chat_Server
             {
                 DateTime timestamp = DateTime.Now;
                 rt_chat_text.AppendText(timestamp.ToLongTimeString() + "\t" + what + Environment.NewLine);
+            }
+        }
+
+        public void SetText(string what, bool debug = false)
+        {
+            if (debug)
+                return;
+            if (this.InvokeRequired)
+            {
+                this.Invoke(
+                    new MethodInvoker(
+                    delegate () { SetText(what); }));
+            }
+            else
+            {
+                rt_chat_text.Clear();
+                rt_chat_text.AppendText(what + Environment.NewLine + Environment.NewLine);
+            }
+        }
+        public void Appendnewprivate(string what, bool debug = false)
+        {
+            if (debug)
+                return;
+            if (this.InvokeRequired)
+            {
+                this.Invoke(
+                    new MethodInvoker(
+                    delegate () { Appendnewprivate(what); }));
+            }
+            else
+            {
+                //DateTime timestamp = DateTime.Now;
+                //rt_chat_text.AppendText(timestamp.ToLongTimeString() + "\t" + what + Environment.NewLine);
+                client_to_connect.Items.Add(what);
             }
         }
 
@@ -222,8 +277,9 @@ namespace Chat_Server
 
 
                 ns.Write(action_buffer, 0, action_buffer.Length);
-
+                //ns.Flush();
                 ns.Write(buffer, 0, buffer.Length);
+                //ns.Flush();
 
                 //string print = current._name.ToUpper() + " : " + send_message.Text + "\n";
                 this.AppendText(print, false);
@@ -244,8 +300,9 @@ namespace Chat_Server
 
 
             ns.Write(action_buffer, 0, action_buffer.Length);
-
+            //ns.Flush();
             ns.Write(buffer, 0, buffer.Length);
+            //ns.Flush();
 
             //string print = current._name.ToUpper() + " : " + send_message.Text + "\n";
 
@@ -269,8 +326,8 @@ namespace Chat_Server
                     Console.WriteLine("Current changed to : "+current._currentchannel._name);
                     SendMessage("get_text", current._currentchannel._name, ns);
 
-                    /* SendMessage("gct",c._name,ns);
-                     BinaryFormatter formatter = new BinaryFormatter();
+                     //SendMessage("gct",c._name,ns);
+                     /*BinaryFormatter formatter = new BinaryFormatter();
                      rt_chat_text = (RichTextBox)formatter.Deserialize(client.GetStream());*/
                 }
             }            
@@ -284,18 +341,38 @@ namespace Chat_Server
         private void Connect_new_channel_Click(object sender, EventArgs e)
         {
             NetworkStream ns = client.GetStream();
-            if (check_channel.Checked == true) {
+            if (check_channel.Checked) 
+            {
                 string action = "conn";
                 byte[] action_buffer = Encoding.ASCII.GetBytes(action);
                 ns.Write(action_buffer, 0, action_buffer.Length);
+                //ns.Flush();
 
                 string new_connexion_channel = (String)channels_to_select.SelectedItem;
                 byte[] new_channel = Encoding.ASCII.GetBytes(new_connexion_channel);
                 ns.Write(new_channel, 0, new_channel.Length);
+                //ns.Flush();
 
                 channels_list.Items.Add(new_connexion_channel);
                 current._clientschannels._channels.Add(new Channel(new_connexion_channel));
                 channels_to_select.Items.Remove(new_connexion_channel);
+            }
+
+            else if (check_private.Checked)
+            {
+                string action = "pconn";
+                byte[] action_buffer = Encoding.ASCII.GetBytes(action);
+                ns.Write(action_buffer, 0, action_buffer.Length);
+                //ns.Flush();
+
+                string new_connexion_private = (String)client_to_connect.SelectedItem;
+                byte[] new_private = Encoding.ASCII.GetBytes(new_connexion_private);
+                ns.Write(new_private, 0, new_private.Length);
+                //ns.Flush();
+
+                private_list.Items.Add(new_connexion_private);
+                current._clientsprivate._private_list.Add(new Private(new_connexion_private));
+                client_to_connect.Items.Remove(new_connexion_private);
             }
         }
 
@@ -321,6 +398,17 @@ namespace Chat_Server
         private void InitCheck()
         {
             check_channel.Checked = true;
+        }
+
+        private void client_to_connect_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        public void RichInit()
+        {
+            string test = "YOUYOU" + Environment.NewLine + "YOUYOU2"+Environment.NewLine;
+            rt_chat_text.Text = test;
         }
     }
 }

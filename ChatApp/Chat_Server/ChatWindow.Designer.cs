@@ -115,6 +115,7 @@
             this.client_to_connect.TabIndex = 8;
             this.client_to_connect.Text = "Choose client ";
             this.client_to_connect.UseWaitCursor = true;
+            this.client_to_connect.SelectedIndexChanged += new System.EventHandler(this.client_to_connect_SelectedIndexChanged);
             // 
             // check_private
             // 

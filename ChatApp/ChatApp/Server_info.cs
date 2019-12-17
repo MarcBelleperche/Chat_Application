@@ -151,7 +151,6 @@ namespace ChatApp
                 string[] actions = action.Split(separator, count, StringSplitOptions.RemoveEmptyEntries);
                 Console.WriteLine(actions[0]);
 
-
                 if (Equals(actions[0].Trim(), "newbie") == true)
                 {
                     //action[1] = action[1].Trim();
@@ -209,6 +208,22 @@ namespace ChatApp
                         break;
                     }
 
+                    else if (Equals(action.Trim(), "get_text,") == true)
+                    {
+                        string data = Encoding.ASCII.GetString(buffer, 0, byte_count);
+                        Console.WriteLine("Le texte du channel :" +data+ " va etre transmit");
+                        foreach (Channel c in list_clients[id].active_channels._channels)
+                        {
+                            if (c._name == data)
+                            {
+                                Console.WriteLine("FOUNDDDDDD");
+                                Console.WriteLine(c._channel_text);
+                                send_channel_text(c._channel_text, client); 
+                            }
+                        }
+                        //send_channel_text();
+
+                    }
 
                     else if (Equals(action.Trim(), "msg") == true)
                     {
@@ -224,7 +239,7 @@ namespace ChatApp
                             if (Equals(channel.Trim(), c._name))
                             {
                                 DateTime timestamp = DateTime.Now;
-                                c._channel_text = c._channel_text + timestamp.ToLongTimeString() + "\t" + data + Environment.NewLine;
+                                c._channel_text += Environment.NewLine + timestamp.ToLongTimeString() + "\t" + data ;
 
                             }
                         }
@@ -243,6 +258,34 @@ namespace ChatApp
                             {
                                 c.active_channels._channels.Add(channel);
                                 Console.WriteLine("Channel " + channel._name + " added to the active clients");
+                                string newconn = c._name + " is now connected";
+                                channel._channel_text += c._name + " is now connected" + Environment.NewLine;
+                                broadcast(newconn, client, data.Trim());
+                            }
+                        }
+                    }
+
+                    else if (Equals(action.Trim(), "pconn") == true)
+                    {
+                        string data = Encoding.ASCII.GetString(buffer, 0, byte_count);
+
+                        Client c = list_clients[id];
+
+                        foreach (Client clients in list_clients.Values)
+                        {
+                            if (Equals(clients._name, data.Trim()) == true)
+                            {
+                                Private privateconn = new Private(c, clients);
+                                c.privates._privates.Add(privateconn);
+                                clients.privates._privates.Add(privateconn);
+                                //clients.privates._privates.Add(new Private(clients, c));
+                                Console.WriteLine("The new private have been add to " + c._name + " for a communication with " + clients._name);
+                                //c.active_channels._channels.Add(channel);
+                                //Console.WriteLine("Channel " + channel._name + " added to the active clients");
+                                string newconn = c._name + " want to speak with you";
+                                privateconn._text += c._name + "want to speak with you";
+                                //channel._channel_text += c._name + " is now connected" + Environment.NewLine;
+                                privatesend(newconn, c, data.Trim());
                             }
                         }
                     }
@@ -275,6 +318,7 @@ namespace ChatApp
             //byte[] buffer = Encoding.ASCII.GetBytes(author + " : "+data + Environment.NewLine);
             byte[] buffer = Encoding.ASCII.GetBytes(data);
             byte[] bufferchannel = Encoding.ASCII.GetBytes(channel);
+            Console.WriteLine("I want to know : " + channel);
 
             //byte[] bufferuser = Encoding.ASCII.GetBytes(author + Environment.NewLine);
 
@@ -304,6 +348,35 @@ namespace ChatApp
             }
         }
 
+        public static void privatesend(string data, Client nosend, string name_to_send)
+        {
+            byte[] buffer = Encoding.ASCII.GetBytes(data);
+            byte[] bufferchannel = Encoding.ASCII.GetBytes(name_to_send);
+            Console.WriteLine("I want to know : " + name_to_send);
+
+            //byte[] bufferuser = Encoding.ASCII.GetBytes(author + Environment.NewLine);
+
+            lock (_lock)
+            {
+              Console.WriteLine("Message pret a etre envoye");
+
+               foreach (Private pr in nosend.privates._privates)
+                {
+                 foreach (Client cl in pr._two_concerned)
+                 {
+                  if (cl._name == name_to_send.Trim())
+                    {
+                        Console.WriteLine("Nous pouvons envoyé a :" + cl._name);
+                        NetworkStream stream = cl._tcpclient.GetStream();
+                        stream.Write(bufferchannel, 0, bufferchannel.Length);
+                        stream.Write(buffer, 0, buffer.Length);
+                     }
+                   }
+                            
+                } 
+            }
+        }
+
         public static void send_channel_text(string data, TcpClient send)
         {
             byte[] buffer = Encoding.ASCII.GetBytes(data);
@@ -314,7 +387,9 @@ namespace ChatApp
                 NetworkStream stream = send.GetStream();
                 //stream.Write(bufferuser, 0, bufferuser.Length);
                 stream.Write(bufferchannel, 0, bufferchannel.Length);
+                //stream.Flush();
                 stream.Write(buffer, 0, buffer.Length);
+                //stream.Flush();
             }
         }
 
