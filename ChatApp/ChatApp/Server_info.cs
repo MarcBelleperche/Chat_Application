@@ -225,6 +225,27 @@ namespace ChatApp
 
                     }
 
+                    else if (Equals(action.Trim(), "get_ptext,") == true)
+                    {
+                        string data = Encoding.ASCII.GetString(buffer, 0, byte_count);
+                        Console.WriteLine("Le texte de :" + data + " va etre transmit");
+                        foreach (Private p in list_clients[id].privates._privates)
+                        {
+                            foreach (Client c in p._two_concerned)
+                            {
+                                if (c._name == data)
+                                {
+                                    Console.WriteLine("FOUNDDDDDD");
+                                    Console.WriteLine(p._text);
+                                }
+                                else send_private_text(p._text, c._tcpclient);
+
+                            }
+                        }
+                        //send_channel_text();
+
+                    }
+
                     else if (Equals(action.Trim(), "msg") == true)
                     {
                         string data = Encoding.ASCII.GetString(buffer, 0, byte_count);
@@ -244,6 +265,32 @@ namespace ChatApp
                             }
                         }
                         broadcast(data, client, channel);
+                    }
+
+                    else if (Equals(action.Trim(), "pmsg") == true)
+                    {
+                        string data = Encoding.ASCII.GetString(buffer, 0, byte_count);
+
+
+                        string[] separeted = data.Split(separator, count, StringSplitOptions.RemoveEmptyEntries);
+                        string channel = separeted[0];
+                        data = separeted[1];
+                        Console.WriteLine("Le message a ete bien recu, pour le client :" + channel + " message : " + data);
+                        foreach (Private p in list_clients[id].privates._privates)
+                        {
+                            foreach (Client c in p._two_concerned)
+                            {
+                                if (Equals(channel.Trim(), c._name))
+                                {
+                                    DateTime timestamp = DateTime.Now;
+                                    p._text += Environment.NewLine + timestamp.ToLongTimeString() + "\t" + data;
+                                }
+                                else
+                                {
+                                    privatesend(data, c);
+                                }
+                            }
+                        }
                     }
 
 
@@ -280,12 +327,9 @@ namespace ChatApp
                                 clients.privates._privates.Add(privateconn);
                                 //clients.privates._privates.Add(new Private(clients, c));
                                 Console.WriteLine("The new private have been add to " + c._name + " for a communication with " + clients._name);
-                                //c.active_channels._channels.Add(channel);
-                                //Console.WriteLine("Channel " + channel._name + " added to the active clients");
                                 string newconn = c._name + " want to speak with you";
                                 privateconn._text += c._name + "want to speak with you";
-                                //channel._channel_text += c._name + " is now connected" + Environment.NewLine;
-                                privatesend(newconn, c, data.Trim());
+                                privatesend(newconn, c);
                             }
                         }
                     }
@@ -348,11 +392,11 @@ namespace ChatApp
             }
         }
 
-        public static void privatesend(string data, Client nosend, string name_to_send)
+        public static void privatesend(string data, Client nosend)
         {
             byte[] buffer = Encoding.ASCII.GetBytes(data);
-            byte[] bufferchannel = Encoding.ASCII.GetBytes(name_to_send);
-            Console.WriteLine("I want to know : " + name_to_send);
+            byte[] bufferchannel = Encoding.ASCII.GetBytes(nosend._name);
+            Console.WriteLine("I want to know : " + nosend._name);
 
             //byte[] bufferuser = Encoding.ASCII.GetBytes(author + Environment.NewLine);
 
@@ -364,7 +408,7 @@ namespace ChatApp
                 {
                  foreach (Client cl in pr._two_concerned)
                  {
-                  if (cl._name == name_to_send.Trim())
+                  if (cl._name != nosend._name.Trim())
                     {
                         Console.WriteLine("Nous pouvons envoyé a :" + cl._name);
                         NetworkStream stream = cl._tcpclient.GetStream();
@@ -381,6 +425,22 @@ namespace ChatApp
         {
             byte[] buffer = Encoding.ASCII.GetBytes(data);
             byte[] bufferchannel = Encoding.ASCII.GetBytes("get_text");
+
+            lock (_lock)
+            {
+                NetworkStream stream = send.GetStream();
+                //stream.Write(bufferuser, 0, bufferuser.Length);
+                stream.Write(bufferchannel, 0, bufferchannel.Length);
+                //stream.Flush();
+                stream.Write(buffer, 0, buffer.Length);
+                //stream.Flush();
+            }
+        }
+
+        public static void send_private_text(string data, TcpClient send)
+        {
+            byte[] buffer = Encoding.ASCII.GetBytes(data);
+            byte[] bufferchannel = Encoding.ASCII.GetBytes("get_ptext");
 
             lock (_lock)
             {

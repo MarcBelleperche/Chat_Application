@@ -19,6 +19,7 @@ namespace Chat_Server
         public Login()
         {
             InitializeComponent();
+            //Clients firstserialize = new Clients();
             password.PasswordChar = '\u25CF';
         }
 
@@ -86,6 +87,11 @@ namespace Chat_Server
         }
 
         private void password_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void username_TextChanged(object sender, EventArgs e)
         {
 
         }

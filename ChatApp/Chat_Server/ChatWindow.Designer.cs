@@ -39,6 +39,9 @@
             this.check_private = new System.Windows.Forms.RadioButton();
             this.check_channel = new System.Windows.Forms.RadioButton();
             this.private_list = new System.Windows.Forms.ListBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.acces_channel = new System.Windows.Forms.CheckBox();
+            this.acces_private = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // rt_chat_text
@@ -91,16 +94,16 @@
             // 
             this.channels_list.FormattingEnabled = true;
             this.channels_list.ItemHeight = 16;
-            this.channels_list.Location = new System.Drawing.Point(12, 12);
+            this.channels_list.Location = new System.Drawing.Point(12, 36);
             this.channels_list.Name = "channels_list";
-            this.channels_list.Size = new System.Drawing.Size(120, 196);
+            this.channels_list.Size = new System.Drawing.Size(167, 180);
             this.channels_list.TabIndex = 6;
             this.channels_list.SelectedIndexChanged += new System.EventHandler(this.channels_list_SelectedIndexChanged);
             // 
             // info
             // 
             this.info.AutoSize = true;
-            this.info.Location = new System.Drawing.Point(185, 221);
+            this.info.Location = new System.Drawing.Point(247, 112);
             this.info.Name = "info";
             this.info.Size = new System.Drawing.Size(38, 17);
             this.info.TabIndex = 7;
@@ -145,16 +148,50 @@
             // 
             this.private_list.FormattingEnabled = true;
             this.private_list.ItemHeight = 16;
-            this.private_list.Location = new System.Drawing.Point(12, 231);
+            this.private_list.Location = new System.Drawing.Point(12, 263);
             this.private_list.Name = "private_list";
-            this.private_list.Size = new System.Drawing.Size(120, 212);
+            this.private_list.Size = new System.Drawing.Size(167, 180);
             this.private_list.TabIndex = 11;
+            this.private_list.SelectedIndexChanged += new System.EventHandler(this.private_list_SelectedIndexChanged);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(12, 16);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(0, 17);
+            this.label1.TabIndex = 12;
+            // 
+            // acces_channel
+            // 
+            this.acces_channel.AutoSize = true;
+            this.acces_channel.Location = new System.Drawing.Point(12, 15);
+            this.acces_channel.Name = "acces_channel";
+            this.acces_channel.Size = new System.Drawing.Size(89, 21);
+            this.acces_channel.TabIndex = 14;
+            this.acces_channel.Text = "Channels";
+            this.acces_channel.UseVisualStyleBackColor = true;
+            this.acces_channel.CheckedChanged += new System.EventHandler(this.acces_channel_CheckedChanged);
+            // 
+            // acces_private
+            // 
+            this.acces_private.AutoSize = true;
+            this.acces_private.Location = new System.Drawing.Point(12, 236);
+            this.acces_private.Name = "acces_private";
+            this.acces_private.Size = new System.Drawing.Size(81, 21);
+            this.acces_private.TabIndex = 15;
+            this.acces_private.Text = "Privates";
+            this.acces_private.UseVisualStyleBackColor = true;
+            this.acces_private.CheckedChanged += new System.EventHandler(this.acces_private_CheckedChanged);
             // 
             // ChatWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.acces_private);
+            this.Controls.Add(this.acces_channel);
+            this.Controls.Add(this.label1);
             this.Controls.Add(this.private_list);
             this.Controls.Add(this.check_channel);
             this.Controls.Add(this.check_private);
@@ -186,5 +223,8 @@
         private System.Windows.Forms.RadioButton check_private;
         private System.Windows.Forms.RadioButton check_channel;
         private System.Windows.Forms.ListBox private_list;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.CheckBox acces_channel;
+        private System.Windows.Forms.CheckBox acces_private;
     }
 }

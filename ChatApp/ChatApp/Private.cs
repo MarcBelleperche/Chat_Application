@@ -13,6 +13,7 @@ namespace ChatApp
 
         public Private(Client first, Client second)
         {
+            this._two_concerned = new List<Client>();
             this._two_concerned.Add(first);
             this._two_concerned.Add(second);
         }

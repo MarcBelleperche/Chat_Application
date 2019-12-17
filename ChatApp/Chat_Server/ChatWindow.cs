@@ -20,91 +20,69 @@ namespace Chat_Server
         TcpClient client;
         Thread thread;
         Client current;
+        List<string> gchannels;
 
-
-        //static readonly Dictionary<String, TcpClient> active_channels = new Dictionary<String, TcpClient>();
-
+        // Classique constructor useless here
         public ChatWindow()
         {
             InitializeComponent();
         }
 
+        //Used constructor
         public ChatWindow(Client current)
         {
            
             InitializeComponent();
-            InitCheck();
-            //RichInit();
+
+            info.Text = current._name;
+            rt_chat_text.Enabled = false;
+            rt_chat_text.ForeColor = Color.Black;
+
+            //Initialisation of windows component for a good way to work
+            InitCheck();                
 
             this.current = current;
 
+            //Etablising the connection 
             this.client = Initialize(current);
 
-            //current._currentchannel = current._clientschannels._channels[0];
-
-
-            //this.client = active_channels.Values.ElementAt(0);
-
             LauchingConnection(this.client);
-
-            //Console.WriteLine("Flag 1");
-
             
         }
 
         private void LauchingConnection(TcpClient client)
         {
             this.ns = client.GetStream();
-            
 
-           /* StreamWriter sW = new StreamWriter(client.GetStream());
-            sW.AutoFlush = true;*/
-
-            // StreamReader sR = new StreamReader(client.GetStream());
-            //Console.WriteLine("Flag 2");
-
-            //Console.WriteLine("Select the channel on wich you want to communicate");
-
-            //string channel = Console.ReadLine();
-            //Send the channel selected
-            //sW.WriteLine(channel);
-            // Send the username
-
-            //sW.WriteLine(current._name);
-
+            //I need to use a lamba in order to start a thread with a parameter
             Thread thread = new Thread(o => ReceiveData((TcpClient)o));
-
-
             this.thread = thread;
-            //Console.WriteLine("Flag 3");
 
-
+            //I start my thread
             thread.Start(client);
-            //Console.WriteLine("Flag 4");
 
-            //Console.ReadKey();
         }
         private TcpClient Initialize(Client current)
         {
+            //Return a TCP and still initialyze the client channels.
+
             TcpClient client;
             current._currentchannel = current._clientschannels._channels[0];
-            //Console.WriteLine(5000);
             Console.WriteLine(current.GetIp());
 
 
              foreach (Channel c in current._clientschannels._channels)
              {
-                     //active_channels.Add(c._name, client);
                      channels_list.Items.Add(c._name);
                      Console.WriteLine(c._name);
              }
 
             client = new TcpClient();
 
+            // Try to lauch the connection with the server with the port 5000 and the Ip Address 127.0.0.1
             try
             {
                 client.Connect(current.GetIp(), 5000);
-                ////active_channels.Add(c._name, client);
                 GetServerChannels(client);
                 NetworkStream ns = client.GetStream();
                 this.ns = ns;
@@ -118,11 +96,13 @@ namespace Chat_Server
             return client;
         }
 
+
+        // This function is used to get all the channels initialised on the server
         public void GetServerChannels(TcpClient client)
         {
             BinaryFormatter formatter = new BinaryFormatter();
-            List<string> channels = (List<string>)formatter.Deserialize(client.GetStream());
-            foreach (String name in channels)
+            gchannels = (List<string>)formatter.Deserialize(client.GetStream());
+            foreach (String name in gchannels)
             {
                 channels_to_select.Items.Add(name);
             }
@@ -165,37 +145,93 @@ namespace Chat_Server
 
                     else if (Equals(action_to_do, "get_text") == true)
                     {
-                        //client_to_connect.Items.Add(data.Trim());
-                        //Console.WriteLine("Setting text " + data.Trim());
+                       
                         SetText(data.Trim(), false);
                         chan = 0;
                     }
 
-                    /*                    else if(Equals(action_to_do, "get_text") == true)
-                                        {
-                                            //rt_chat_text.Text = data;
-                                            this.AppendText(data, false);
-                                        }
-                    */
+                    else if (Equals(action_to_do, "get_ptext") == true)
+                    {
+
+                        SetText(data.Trim(), false);
+                        chan = 0;
+                    }
+
                     else
                     {
                         Console.WriteLine("Le channel courant est :" + current._currentchannel._name);
-                        Console.WriteLine("Le channel a comparé est : " + channel);
+                        Console.WriteLine("Le channel OU prenom a comparé est : " + channel);
+
                         //Console.WriteLine((Equals(current._currentchannel._name, "Default")));
+
                         channel = channel.Trim();
-                        if (Equals(channel, current._currentchannel._name) == true)
-                        {
-                            Console.WriteLine("I am in ...");
-                            this.AppendText(data, false);
+                        if (acces_channel.Checked) {
+                            if (Equals(channel, current._currentchannel._name) == true)
+                            {
+                                Console.WriteLine("I am in ...");
+                                this.AppendText(data, false);
+                            }
+                            else
+                            {
+                                bool notachannel = true;
+                                foreach (String names in gchannels)
+                                {
+                                    if (names == channel) notachannel = false;
+                                }
+                                Console.WriteLine("I got that far");
+                                if (notachannel == true)
+                                {
+                                    if (current._clientsprivate._private_list.Count == 0) AddClient(channel, false);
+                                    else
+                                    {
+                                        foreach (Private p in current._clientsprivate._private_list)
+                                        {
+                                            if (channel != p._name && channel != current._name.ToUpper())
+                                            {
+                                                //private_list.Items.Add(channel);
+                                                AddClient(channel, false);
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                            }
                         }
 
-                        else if (Equals(channel, current._currentprivate)==true)
-                        {
-                            Console.WriteLine("Got it ...");
-                            this.AppendText(data, false);
+                        else if (acces_private.Checked) {
+                            //Console.WriteLine("Le nom de l'ecrivain : "+ channel +" la conversation selectionne : "+current._currentprivate._name);
+                            if (Equals(channel.Trim(), current._currentprivate._name) == true)
+                            {
+                                Console.WriteLine("Got it ...");
+                                this.AppendText(data, false);
+                            }
+                            else
+                            {
+                                bool notachannel = true;
+                                foreach (String names in gchannels)
+                                {
+                                    if (names == channel) notachannel = false;
+                                }
+                                Console.WriteLine("I got that far");
+                                if (notachannel == true)
+                                {
+                                    if (current._clientsprivate._private_list.Count == 0) AddClient(channel, false);
+                                    else
+                                    {
+                                        foreach (Private p in current._clientsprivate._private_list)
+                                        {
+                                            if (channel != p._name && channel != current._name.ToUpper())
+                                            {
+                                                //private_list.Items.Add(channel);
+                                                AddClient(channel, false);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
-
                         chan = 0;
+
                     }
                 }
                
@@ -203,6 +239,7 @@ namespace Chat_Server
       
         }
 
+        //-------------------------6 Delegates functions that i needed to use in my thread to access windows components -----------
         public void AppendText(string what, bool debug = false)
         {
             if (debug)
@@ -217,6 +254,24 @@ namespace Chat_Server
             {
                 DateTime timestamp = DateTime.Now;
                 rt_chat_text.AppendText(timestamp.ToLongTimeString() + "\t" + what + Environment.NewLine);
+            }
+        }
+
+        public void AddClient(string what, bool debug = false)
+        {
+            if (debug)
+                return;
+            if (this.InvokeRequired)
+            {
+                this.Invoke(
+                    new MethodInvoker(
+                    delegate () { AddClient(what); }));
+            }
+            else
+            {
+                private_list.Items.Add(what);
+                current._clientsprivate._private_list.Add(new Private(what));
+                client_to_connect.Items.Remove(what);
             }
         }
 
@@ -248,12 +303,15 @@ namespace Chat_Server
             }
             else
             {
-                //DateTime timestamp = DateTime.Now;
-                //rt_chat_text.AppendText(timestamp.ToLongTimeString() + "\t" + what + Environment.NewLine);
                 client_to_connect.Items.Add(what);
             }
         }
 
+        //--------------------------------------------------------------------------------------------------------
+
+
+
+            // Send function usind the buffer first then the client stream to write on it 
         private void send_Click(object sender, EventArgs e)
         {
             if (send_message.Text == "EXIT")
@@ -267,31 +325,34 @@ namespace Chat_Server
 
             else
             {
-                string action = "msg";
-                byte[] action_buffer = Encoding.ASCII.GetBytes(action);
+                if (acces_channel.Checked) {
+                    string action = "msg";
+                    byte[] action_buffer = Encoding.ASCII.GetBytes(action);
+                    string current_channel_name = current._currentchannel._name;
+                    string print = current._name.ToUpper() + " : " + send_message.Text + "\n";
+                    byte[] buffer = Encoding.ASCII.GetBytes(current_channel_name + "," + print);
+                    ns.Write(action_buffer, 0, action_buffer.Length);
+                    ns.Write(buffer, 0, buffer.Length);
+                    this.AppendText(print, false);
+                }
 
-
-                string current_channel_name = current._currentchannel._name;
-                string print = current._name.ToUpper() + " : " + send_message.Text + "\n";
-                byte[] buffer = Encoding.ASCII.GetBytes(current_channel_name + "," + print);
-
-
-                ns.Write(action_buffer, 0, action_buffer.Length);
-                //ns.Flush();
-                ns.Write(buffer, 0, buffer.Length);
-                //ns.Flush();
-
-                //string print = current._name.ToUpper() + " : " + send_message.Text + "\n";
-                this.AppendText(print, false);
-
-                //rt_chat_text.Text = rt_chat_text.Text  + current._name.ToUpper()+" : "+ send_message.Text + "\n";
-                //byte[] check = new byte[1024];
-
-                //string action = "msg";
+                else if (acces_private.Checked)
+                {
+                    string action = "pmsg";
+                    byte[] action_buffer = Encoding.ASCII.GetBytes(action);
+                    string current_private_name = current._currentprivate._name;
+                    string print = current._name.ToUpper() + " : " + send_message.Text + "\n";
+                    byte[] buffer = Encoding.ASCII.GetBytes(current_private_name + "," + print);
+                    ns.Write(action_buffer, 0, action_buffer.Length);
+                    ns.Write(buffer, 0, buffer.Length);
+                    this.AppendText(print, false);
+                }
+               
 
             }
         }
 
+        //Function doing basically the same thing that the one above but i use it for spleciale requests
         private void SendMessage(string action, string data, NetworkStream ns)
         {
             byte[] action_buffer = Encoding.ASCII.GetBytes(action+",");
@@ -300,13 +361,7 @@ namespace Chat_Server
 
 
             ns.Write(action_buffer, 0, action_buffer.Length);
-            //ns.Flush();
             ns.Write(buffer, 0, buffer.Length);
-            //ns.Flush();
-
-            //string print = current._name.ToUpper() + " : " + send_message.Text + "\n";
-
-            //rt_chat_text.Text = rt_chat_text.Text  + current._name.ToUpper()+" : "+ send_message.Text + "\n";
         }
 
         private void rt_chat_text_TextChanged(object sender, EventArgs e)
@@ -314,8 +369,33 @@ namespace Chat_Server
 
         }
 
+        private void private_list_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            private_list.Enabled = true;
+            channels_list.Enabled = false;
+            string current_private = (String)private_list.SelectedItem;
+            Console.WriteLine(current_private);
+            foreach (Private p in current._clientsprivate._private_list)
+            {
+                if (current_private == p._name)
+                {
+                    current._currentprivate = p;
+                    Console.WriteLine("Current changed to : " + current._currentprivate._name);
+                    SendMessage("get_ptext", current._currentprivate._name, ns);
+
+                    //SendMessage("gct",c._name,ns);
+                    /*BinaryFormatter formatter = new BinaryFormatter();
+                    rt_chat_text = (RichTextBox)formatter.Deserialize(client.GetStream());*/
+                }
+            }
+
+
+        }
+
         private void channels_list_SelectedIndexChanged(object sender, EventArgs e)
         {
+            private_list.Enabled = false;
+            channels_list.Enabled = true;
             string current_channel = (String)channels_list.SelectedItem;
             Console.WriteLine(current_channel);
             foreach(Channel c in current._clientschannels._channels)
@@ -332,11 +412,25 @@ namespace Chat_Server
                 }
             }            
         }
+        private void channels_list_Click(object sender, EventArgs e)
+        {
+            private_list.Enabled = false;
+            channels_list.Enabled = true;
+        }
+
+
+        private void private_list_Click(object sender, EventArgs e)
+        {
+            private_list.Enabled = true;
+            channels_list.Enabled = false;
+        }
+
 
         private void channels_to_select_SelectedIndexChanged(object sender, EventArgs e)
         {
 
         }
+
 
         private void Connect_new_channel_Click(object sender, EventArgs e)
         {
@@ -398,6 +492,7 @@ namespace Chat_Server
         private void InitCheck()
         {
             check_channel.Checked = true;
+            acces_channel.Checked = true;
         }
 
         private void client_to_connect_SelectedIndexChanged(object sender, EventArgs e)
@@ -405,10 +500,24 @@ namespace Chat_Server
 
         }
 
-        public void RichInit()
+        private void acces_channel_CheckedChanged(object sender, EventArgs e)
         {
-            string test = "YOUYOU" + Environment.NewLine + "YOUYOU2"+Environment.NewLine;
-            rt_chat_text.Text = test;
+            if (acces_channel.Checked)
+            {
+                acces_private.Checked = false;
+                channels_list.Enabled = true;
+                private_list.Enabled = false;
+            }
+        }
+
+        private void acces_private_CheckedChanged(object sender, EventArgs e)
+        {
+            if (acces_private.Checked)
+            {
+                acces_channel.Checked = false;
+                private_list.Enabled = true;
+                channels_list.Enabled = false;
+            }
         }
     }
 }

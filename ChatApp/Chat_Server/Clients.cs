@@ -15,8 +15,9 @@ namespace Chat_Server
 
         public Clients()
         {
-/*            this._clients = new List<Client>();
-            _clients.Add(new Client("Marc", "marc"));*/
+            /*this._clients = new List<Client>();
+            _clients.Add(new Client("Marc", "marc"));
+            this.serialize(this);*/
         }
 
         public void serialize(Clients clients)

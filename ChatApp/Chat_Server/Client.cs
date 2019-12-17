@@ -23,14 +23,14 @@ namespace Chat_Server
         {
             _clientschannels = new Channels();
             _clientsprivate = new Privates();
-
+            _currentprivate = new Private("Start");
             this._name = name;
             this._password = psw;
-           /* foreach (Channel c in _clientschannels._channels)
+            foreach (Channel c in _clientschannels._channels)
             {
                 Console.WriteLine(c._name);
                 //if (c._name == "defaut") this._currentchannel = c;
-            }*/
+            }
 
             this.ip = IPAddress.Parse("127.0.0.1");
 
