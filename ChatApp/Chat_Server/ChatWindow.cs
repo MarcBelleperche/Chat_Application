@@ -21,6 +21,7 @@ namespace Chat_Server
         Thread thread;
         Client current;
         List<string> gchannels;
+        List<string> gclients;
 
         // Classique constructor useless here
         public ChatWindow()
@@ -84,9 +85,12 @@ namespace Chat_Server
             {
                 client.Connect(current.GetIp(), 5000);
                 GetServerChannels(client);
+                GetServerClient(client);
                 NetworkStream ns = client.GetStream();
                 this.ns = ns;
-                SendMessage("newbie", current._name.ToUpper(), ns);
+                //SendMessage("newbie", current._name.ToUpper(), ns);
+                SendMessages("newbie", ns);
+                SendMessages(current._name.ToUpper(),ns);
             }
             catch (SocketException)
             {
@@ -108,7 +112,18 @@ namespace Chat_Server
             }
         }
 
-         void ReceiveData(TcpClient client)
+        public void GetServerClient(TcpClient client)
+        {
+            BinaryFormatter formatter = new BinaryFormatter();
+            gclients = (List<string>)formatter.Deserialize(client.GetStream());
+            foreach (String name in gclients)
+            {
+                if (name == null) break;
+                else client_to_connect.Items.Add(name);
+            }
+        }
+
+        void ReceiveData(TcpClient client)
         {
             NetworkStream ns = client.GetStream();
 
@@ -184,14 +199,17 @@ namespace Chat_Server
                                     if (current._clientsprivate._private_list.Count == 0) AddClient(channel, false);
                                     else
                                     {
+                                        string channeltoadd = null;
                                         foreach (Private p in current._clientsprivate._private_list)
                                         {
                                             if (channel != p._name && channel != current._name.ToUpper())
                                             {
                                                 //private_list.Items.Add(channel);
-                                                AddClient(channel, false);
+                                                channeltoadd = channel;
+
                                             }
                                         }
+                                        if (channeltoadd != null) AddClient(channeltoadd, false);
                                     }
                                 }
                                 
@@ -218,14 +236,17 @@ namespace Chat_Server
                                     if (current._clientsprivate._private_list.Count == 0) AddClient(channel, false);
                                     else
                                     {
+                                        string channeltoadd = null;
                                         foreach (Private p in current._clientsprivate._private_list)
                                         {
                                             if (channel != p._name && channel != current._name.ToUpper())
                                             {
+                                                channeltoadd = channel;
                                                 //private_list.Items.Add(channel);
-                                                AddClient(channel, false);
                                             }
                                         }
+                                        AddClient(channeltoadd, false);
+
                                     }
                                 }
                             }
@@ -314,37 +335,47 @@ namespace Chat_Server
             // Send function usind the buffer first then the client stream to write on it 
         private void send_Click(object sender, EventArgs e)
         {
-            if (send_message.Text == "EXIT")
+            if (send_message.Text == "exit")
             {
-                client.Client.Shutdown(SocketShutdown.Send);
+                SendMessages("exit", ns);
+                SendMessages((string)channels_list.SelectedItem,ns);
+                channels_list.Items.Remove(channels_list.SelectedItem);
+                foreach(Channel c in current._clientschannels._channels)
+                {
+                    if (c._name == (string)channels_list.SelectedItem)
+                    {
+                        current._clientschannels._channels.Remove(c);
+
+                    }
+                }
+                /*client.Client.Shutdown(SocketShutdown.Send);
                 thread.Join();
                 ns.Close();
-                client.Close();
+                client.Close();*/
                 Console.WriteLine("disconnect from server!!");
             }
 
             else
             {
                 if (acces_channel.Checked) {
-                    string action = "msg";
-                    byte[] action_buffer = Encoding.ASCII.GetBytes(action);
                     string current_channel_name = current._currentchannel._name;
                     string print = current._name.ToUpper() + " : " + send_message.Text + "\n";
-                    byte[] buffer = Encoding.ASCII.GetBytes(current_channel_name + "," + print);
-                    ns.Write(action_buffer, 0, action_buffer.Length);
-                    ns.Write(buffer, 0, buffer.Length);
+                    SendMessages("msg", ns);
+                    SendMessages(current_channel_name,ns);
+                    SendMessages(print, ns);
+
                     this.AppendText(print, false);
                 }
 
                 else if (acces_private.Checked)
                 {
-                    string action = "pmsg";
-                    byte[] action_buffer = Encoding.ASCII.GetBytes(action);
                     string current_private_name = current._currentprivate._name;
                     string print = current._name.ToUpper() + " : " + send_message.Text + "\n";
-                    byte[] buffer = Encoding.ASCII.GetBytes(current_private_name + "," + print);
-                    ns.Write(action_buffer, 0, action_buffer.Length);
-                    ns.Write(buffer, 0, buffer.Length);
+
+                    SendMessages("pmsg", ns);
+                    SendMessages(current_private_name, ns);
+                    SendMessages(print, ns);
+
                     this.AppendText(print, false);
                 }
                
@@ -353,15 +384,14 @@ namespace Chat_Server
         }
 
         //Function doing basically the same thing that the one above but i use it for spleciale requests
-        private void SendMessage(string action, string data, NetworkStream ns)
+
+        private void SendMessages(string data, NetworkStream ns)
         {
-            byte[] action_buffer = Encoding.ASCII.GetBytes(action+",");
+            byte[] databuffer = Encoding.ASCII.GetBytes(data);
 
-            byte[] buffer = Encoding.ASCII.GetBytes(data);
+            ns.Write(databuffer, 0, databuffer.Length);
+            System.Threading.Thread.Sleep(10);
 
-
-            ns.Write(action_buffer, 0, action_buffer.Length);
-            ns.Write(buffer, 0, buffer.Length);
         }
 
         private void rt_chat_text_TextChanged(object sender, EventArgs e)
@@ -381,11 +411,9 @@ namespace Chat_Server
                 {
                     current._currentprivate = p;
                     Console.WriteLine("Current changed to : " + current._currentprivate._name);
-                    SendMessage("get_ptext", current._currentprivate._name, ns);
 
-                    //SendMessage("gct",c._name,ns);
-                    /*BinaryFormatter formatter = new BinaryFormatter();
-                    rt_chat_text = (RichTextBox)formatter.Deserialize(client.GetStream());*/
+                    SendMessages("get_ptext", ns);
+                    SendMessages(current._currentprivate._name, ns);
                 }
             }
 
@@ -404,11 +432,8 @@ namespace Chat_Server
                 {
                     current._currentchannel = c;
                     Console.WriteLine("Current changed to : "+current._currentchannel._name);
-                    SendMessage("get_text", current._currentchannel._name, ns);
-
-                     //SendMessage("gct",c._name,ns);
-                     /*BinaryFormatter formatter = new BinaryFormatter();
-                     rt_chat_text = (RichTextBox)formatter.Deserialize(client.GetStream());*/
+                    SendMessages("get_text", ns);
+                    SendMessages(current._currentchannel._name, ns);
                 }
             }            
         }
@@ -437,15 +462,11 @@ namespace Chat_Server
             NetworkStream ns = client.GetStream();
             if (check_channel.Checked) 
             {
-                string action = "conn";
-                byte[] action_buffer = Encoding.ASCII.GetBytes(action);
-                ns.Write(action_buffer, 0, action_buffer.Length);
-                //ns.Flush();
-
+                SendMessages("conn", ns);
                 string new_connexion_channel = (String)channels_to_select.SelectedItem;
-                byte[] new_channel = Encoding.ASCII.GetBytes(new_connexion_channel);
-                ns.Write(new_channel, 0, new_channel.Length);
-                //ns.Flush();
+  
+                SendMessages(new_connexion_channel, ns);
+
 
                 channels_list.Items.Add(new_connexion_channel);
                 current._clientschannels._channels.Add(new Channel(new_connexion_channel));
@@ -454,15 +475,10 @@ namespace Chat_Server
 
             else if (check_private.Checked)
             {
-                string action = "pconn";
-                byte[] action_buffer = Encoding.ASCII.GetBytes(action);
-                ns.Write(action_buffer, 0, action_buffer.Length);
-                //ns.Flush();
-
+                SendMessages("pconn", ns);
                 string new_connexion_private = (String)client_to_connect.SelectedItem;
-                byte[] new_private = Encoding.ASCII.GetBytes(new_connexion_private);
-                ns.Write(new_private, 0, new_private.Length);
-                //ns.Flush();
+
+                SendMessages(new_connexion_private, ns);
 
                 private_list.Items.Add(new_connexion_private);
                 current._clientsprivate._private_list.Add(new Private(new_connexion_private));

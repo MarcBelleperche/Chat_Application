@@ -103,7 +103,7 @@
             // info
             // 
             this.info.AutoSize = true;
-            this.info.Location = new System.Drawing.Point(247, 112);
+            this.info.Location = new System.Drawing.Point(185, 112);
             this.info.Name = "info";
             this.info.Size = new System.Drawing.Size(38, 17);
             this.info.TabIndex = 7;
