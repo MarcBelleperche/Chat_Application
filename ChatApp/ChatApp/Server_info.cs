@@ -24,12 +24,6 @@ namespace ChatApp
 
         public enum actions { newbie, get_text ,get_ptext, msg,  pmsg, conn, pconn };
 
-
-        //Here strats the main secction
-        /// <summary>
-        /// Point d'entrée principal de l'application.
-        /// </summary>
-        /// 
         Channels server_channels;
 
         public Server_info()
@@ -38,17 +32,13 @@ namespace ChatApp
             InitializeComponent();
 
             server_channels = new Channels();
-            server_channels._channels.Add(new Channel("Les Gentlemen du sexe"));
+            server_channels._channels.Add(new Channel("Nine Gag"));
             server_channels._channels.Add(new Channel("Nitro Gaming"));
-            server_channels._channels.Add(new Channel("VIVE les glups"));
+            server_channels._channels.Add(new Channel("C# broke my brain"));
             server_channels._channels.Add(new Channel("ITF PROMO 2021"));
 
 
             Connection(5000);
-
-            //Instancing objetcs
-            //Here strats the main secction
-
 
         }
 
@@ -80,11 +70,12 @@ namespace ChatApp
                 bf.Serialize(client._tcpclient.GetStream(), string_server_channels);
 
                 //-----------------------------------------------------------------------------------------------------
+                // HERE I SEND ALL THE CONNECTED CLIENT TO THE NEW ONE
                 List<string> string_server_clients = Convert_client_to_string();
                 BinaryFormatter bfs = new BinaryFormatter();
                 bfs.Serialize(client._tcpclient.GetStream(), string_server_clients);
 
-                //New thread for the client connected
+                //New thread for the connected client 
                 Thread t = new Thread(handle_clients);
                 t.Start(count);
                 count++;
@@ -92,6 +83,7 @@ namespace ChatApp
 
         }
 
+        // FUNCTIONS USED TO SEND THE LISTS TO THE CLIENT (Clients and Connected clients)
         public List<string> Convert_to_string()
         {
             List<string> stringlist = new List<string>();
@@ -112,7 +104,9 @@ namespace ChatApp
             return stringlist;
         }
 
+        //--------------------------------------------------------------------------------
 
+        // THREAD CREATED FOR EACH CLIENT TO RECEIVE AND GO THROUGH THE DATA THE SERVER RECEIVES
         public void handle_clients(object o)
         {
             int id = (int)o;
@@ -125,22 +119,13 @@ namespace ChatApp
 
             while (true)
             {
-                //StreamReader sR = new StreamReader(client.GetStream());
-                ///string username = sR.ReadLine().ToUpper();
-                //string username = "FIONA";
-
                 NetworkStream stream = client.GetStream();
-/*                byte[] msg = new byte[1024]; ;
-                int action_count = stream.Read(msg, 0, msg.Length);
-                if (action_count == 0)
-                {
-                    break;
-                }*/
-                //string action = Encoding.ASCII.GetString(msg, 0, action_count);
 
                 string action = Receivedata(stream);
 
                 Console.WriteLine(action);
+
+                //Switch case used to execute different types of action due to the pre message it received
 
                 switch (action)
                 {
@@ -176,9 +161,10 @@ namespace ChatApp
                                 {
                                     Console.WriteLine("FOUNDDDDDD");
                                     Console.WriteLine(p._text);
+                                    send_private_text(p._text, list_clients[id]._tcpclient);
                                 }
 
-                                else send_private_text(p._text, cc._tcpclient);
+                                //else send_private_text(p._text, cc._tcpclient);
                             }
                         }
                         break;
@@ -204,7 +190,7 @@ namespace ChatApp
 
                         string pchannel = Receivedata(stream);
                         string pmsg = Receivedata(stream);
-                        Console.WriteLine("Le message a ete bien recu, le channel est :" + pchannel + " message : " + pmsg);
+                        Console.WriteLine("Le message a ete bien recu, le client qui va recevoir est :" + pchannel + " message : " + pmsg);
                         foreach (Private p in list_clients[id].privates._privates)
                         {
                             foreach (Client cccc in p._two_concerned)
@@ -213,10 +199,12 @@ namespace ChatApp
                                 {
                                     DateTime timestamp = DateTime.Now;
                                     p._text += Environment.NewLine + timestamp.ToLongTimeString() + "\t" + pmsg;
+                                    Console.WriteLine("VERIFICATIONNNNNNNNNNNNNNNNNNNNNNNNN");
+                                    privatesend(pmsg, list_clients[id],cccc);
                                 }
                                 else
                                 {
-                                    privatesend(pmsg, cccc);
+                                    //privatesend(pmsg, cccc);
                                 }
                             }
                         }
@@ -252,11 +240,10 @@ namespace ChatApp
                                 Private privateconn = new Private(cs, clients);
                                 cs.privates._privates.Add(privateconn);
                                 clients.privates._privates.Add(privateconn);
-                                //clients.privates._privates.Add(new Private(clients, c));
                                 Console.WriteLine("The new private have been add to " + cs._name + " for a communication with " + clients._name);
                                 string newconn = cs._name + " want to speak with you";
-                                privateconn._text += cs._name + "want to speak with you";
-                                privatesend(newconn, cs);
+                                privateconn._text += cs._name + " want to speak with you";
+                                privatesend(newconn, cs, clients);
                             }
                         }
                         break;
@@ -289,6 +276,8 @@ namespace ChatApp
             client.Close();
         }
 
+
+        // RECEIVE FUNCTION RETURN A STRING AND USING NETWORKSTREAM
         public string Receivedata(NetworkStream stream)
         {
             byte[] msg = new byte[1024]; ;
@@ -303,19 +292,12 @@ namespace ChatApp
 
         public static void broadcast(string data, TcpClient nosend, string channel)
         {
-            //byte[] buffer = Encoding.ASCII.GetBytes(author + " : "+data + Environment.NewLine);
-            byte[] buffer = Encoding.ASCII.GetBytes(data);
-            byte[] bufferchannel = Encoding.ASCII.GetBytes(channel);
             Console.WriteLine("I want to know : " + channel);
-
-            //byte[] bufferuser = Encoding.ASCII.GetBytes(author + Environment.NewLine);
 
             lock (_lock)
             {
                 foreach (Client c in list_clients.Values)
                 {
-                    //string channel = c.channel._name;
-                    //if (channel == commchan ) {
                     TcpClient cou = c._tcpclient;
                     if (cou != nosend)
                     {
@@ -326,9 +308,8 @@ namespace ChatApp
                             {
                                 Console.WriteLine("Nous pouvons envoyé sur le channel :" + chan._name);
                                 NetworkStream stream = cou.GetStream();
-                                //stream.Write(bufferuser, 0, bufferuser.Length);
-                                stream.Write(bufferchannel, 0, bufferchannel.Length);
-                                stream.Write(buffer, 0, buffer.Length);
+                                SendMessages(channel, stream);
+                                SendMessages(data, stream);
                             }
                         }
                     }
@@ -336,28 +317,25 @@ namespace ChatApp
             }
         }
 
-        public static void privatesend(string data, Client nosend)
+        public static void privatesend(string data, Client nosend, Client tosend)
         {
-            byte[] buffer = Encoding.ASCII.GetBytes(data);
-            byte[] bufferchannel = Encoding.ASCII.GetBytes(nosend._name);
-            Console.WriteLine("I want to know : " + nosend._name);
-
-            //byte[] bufferuser = Encoding.ASCII.GetBytes(author + Environment.NewLine);
+            Console.WriteLine("Private send tcp name transmitted for the function : " + nosend._name);
 
             lock (_lock)
             {
-              Console.WriteLine("Message pret a etre envoye");
+              Console.WriteLine("Message pret a etre envoye a l'autre client");
 
                foreach (Private pr in nosend.privates._privates)
                 {
-                 foreach (Client cl in pr._two_concerned)
-                 {
-                  if (cl._name != nosend._name.Trim())
+                    foreach (Client cl in pr._two_concerned)
                     {
-                        Console.WriteLine("Nous pouvons envoyé a :" + cl._name);
+                        Console.WriteLine("Les clients de the two concerned are : "+cl._name);
+                  if (cl._name != nosend._name.Trim() && cl._name == tosend._name)
+                    {
+                        Console.WriteLine("Nous pouvons envoyé a : " + cl._name);
                         NetworkStream stream = cl._tcpclient.GetStream();
-                        stream.Write(bufferchannel, 0, bufferchannel.Length);
-                        stream.Write(buffer, 0, buffer.Length);
+                            SendMessages(nosend._name, stream);
+                            SendMessages(data, stream);
                      }
                    }
                             
@@ -367,44 +345,26 @@ namespace ChatApp
 
         public static void send_channel_text(string data, TcpClient send)
         {
-            byte[] buffer = Encoding.ASCII.GetBytes(data);
-            byte[] bufferchannel = Encoding.ASCII.GetBytes("get_text");
-
             lock (_lock)
             {
                 NetworkStream stream = send.GetStream();
-                //stream.Write(bufferuser, 0, bufferuser.Length);
-                stream.Write(bufferchannel, 0, bufferchannel.Length);
-                //stream.Flush();
-                stream.Write(buffer, 0, buffer.Length);
-                //stream.Flush();
+                SendMessages("get_text", stream);
+                SendMessages(data, stream);
             }
         }
 
         public static void send_private_text(string data, TcpClient send)
         {
-            byte[] buffer = Encoding.ASCII.GetBytes(data);
-            byte[] bufferchannel = Encoding.ASCII.GetBytes("get_ptext");
-
             lock (_lock)
             {
                 NetworkStream stream = send.GetStream();
-                //stream.Write(bufferuser, 0, bufferuser.Length);
-                stream.Write(bufferchannel, 0, bufferchannel.Length);
-                //stream.Flush();
-                stream.Write(buffer, 0, buffer.Length);
-                //stream.Flush();
+                SendMessages("get_ptext", stream);
+                SendMessages(data, stream);
             }
         }
 
         public static void addnewbie(string data, TcpClient nosend)
         {
-            //byte[] buffer = Encoding.ASCII.GetBytes(author + " : "+data + Environment.NewLine);
-            byte[] buffer = Encoding.ASCII.GetBytes(data);
-            byte[] bufferchannel = Encoding.ASCII.GetBytes("newbie");
-
-            //byte[] bufferuser = Encoding.ASCII.GetBytes(author + Environment.NewLine);
-
             lock (_lock)
             {
                 foreach (Client c in list_clients.Values)
@@ -415,12 +375,22 @@ namespace ChatApp
 
                         Console.WriteLine("Transfert et ajout du client :" + data);
                         NetworkStream stream = cou.GetStream();
-                        stream.Write(bufferchannel, 0, bufferchannel.Length);
-                        stream.Write(buffer, 0, buffer.Length);
+                        SendMessages("newbie", stream);
+                        SendMessages(data, stream);
 
                     }
                 }
             }
+        }
+
+
+        private static void SendMessages(string data, NetworkStream ns)
+        {
+            byte[] databuffer = Encoding.ASCII.GetBytes(data);
+
+            ns.Write(databuffer, 0, databuffer.Length);
+            System.Threading.Thread.Sleep(10);
+
         }
 
         private void label1_Click(object sender, EventArgs e)

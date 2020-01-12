@@ -36,7 +36,7 @@ namespace Chat_Server
             InitializeComponent();
 
             info.Text = current._name;
-            rt_chat_text.Enabled = false;
+            rt_chat_text.Enabled = true;
             rt_chat_text.ForeColor = Color.Black;
 
             //Initialisation of windows component for a good way to work
@@ -143,117 +143,127 @@ namespace Chat_Server
                 if (chan == 0)
                 {
                     channel = data;
-                    Console.WriteLine("Message pret a etre ecrit sur le channel : "+channel);
+                    Console.WriteLine("Message pret a etre ecrit sur le channel/pour le client : "+channel);
                     chan++;
-                }
+                }     
                 else if (chan == 1)
                 {
                     string action_to_do = channel.Trim();
+
                     Console.WriteLine("ACTION TO DO :"+action_to_do);
-                    if (Equals(action_to_do, "newbie") == true)
+
+                    switch (action_to_do)
                     {
-                        //client_to_connect.Items.Add(data.Trim());
-                        Console.WriteLine("CLient to connect add "+ data.Trim());
-                        Appendnewprivate(data.Trim());
-                        chan = 0;
-                    }
+                        case "newbie":
+                            Console.WriteLine("CLient to connect add " + data.Trim());
+                            Appendnewprivate(data.Trim());
+                            chan = 0;
+                            break;
 
-                    else if (Equals(action_to_do, "get_text") == true)
-                    {
-                       
-                        SetText(data.Trim(), false);
-                        chan = 0;
-                    }
+                        case "get_text":
+                            SetText(data.Trim(), false);
+                            chan = 0;
+                            break;
 
-                    else if (Equals(action_to_do, "get_ptext") == true)
-                    {
+                        case "get_ptext":
+                            SetText(data.Trim(), false);
+                            chan = 0;
+                            break;
 
-                        SetText(data.Trim(), false);
-                        chan = 0;
-                    }
+                        default:
 
-                    else
-                    {
-                        Console.WriteLine("Le channel courant est :" + current._currentchannel._name);
-                        Console.WriteLine("Le channel OU prenom a comparé est : " + channel);
+                            Console.WriteLine("No defined action for :" + action_to_do);
 
-                        //Console.WriteLine((Equals(current._currentchannel._name, "Default")));
 
-                        channel = channel.Trim();
-                        if (acces_channel.Checked) {
-                            if (Equals(channel, current._currentchannel._name) == true)
+                            Console.WriteLine("Le channel courant est : " + current._currentchannel._name);
+                            Console.WriteLine("Le private courant est : "+ current._currentprivate._name);
+                            Console.WriteLine("Le channel OU prenom a comparé est : " + channel);
+
+                            //Console.WriteLine((Equals(current._currentchannel._name, "Default")));
+
+                            channel = channel.Trim();
+                            if (acces_channel.Checked)
                             {
-                                Console.WriteLine("I am in ...");
-                                this.AppendText(data, false);
-                            }
-                            else
-                            {
-                                bool notachannel = true;
-                                foreach (String names in gchannels)
+                                if (Equals(channel, current._currentchannel._name) == true)
                                 {
-                                    if (names == channel) notachannel = false;
+                                    Console.WriteLine("I am in ...");
+                                    this.AppendText(data, false);
                                 }
-                                Console.WriteLine("I got that far");
-                                if (notachannel == true)
+                                else
                                 {
-                                    if (current._clientsprivate._private_list.Count == 0) AddClient(channel, false);
-                                    else
+                                    bool notachannel = true;
+                                    foreach (String names in gchannels)
                                     {
-                                        string channeltoadd = null;
-                                        foreach (Private p in current._clientsprivate._private_list)
-                                        {
-                                            if (channel != p._name && channel != current._name.ToUpper())
-                                            {
-                                                //private_list.Items.Add(channel);
-                                                channeltoadd = channel;
-
-                                            }
-                                        }
-                                        if (channeltoadd != null) AddClient(channeltoadd, false);
-                                    }
-                                }
-                                
-                            }
-                        }
-
-                        else if (acces_private.Checked) {
-                            //Console.WriteLine("Le nom de l'ecrivain : "+ channel +" la conversation selectionne : "+current._currentprivate._name);
-                            if (Equals(channel.Trim(), current._currentprivate._name) == true)
-                            {
-                                Console.WriteLine("Got it ...");
-                                this.AppendText(data, false);
-                            }
-                            else
-                            {
-                                bool notachannel = true;
-                                foreach (String names in gchannels)
-                                {
-                                    if (names == channel) notachannel = false;
-                                }
-                                Console.WriteLine("I got that far");
-                                if (notachannel == true)
-                                {
-                                    if (current._clientsprivate._private_list.Count == 0) AddClient(channel, false);
-                                    else
-                                    {
-                                        string channeltoadd = null;
-                                        foreach (Private p in current._clientsprivate._private_list)
-                                        {
-                                            if (channel != p._name && channel != current._name.ToUpper())
-                                            {
-                                                channeltoadd = channel;
-                                                //private_list.Items.Add(channel);
-                                            }
-                                        }
-                                        AddClient(channeltoadd, false);
+                                        if (names == channel) notachannel = false;
 
                                     }
+                                    foreach (Channel c in current._clientschannels._channels)
+                                    {
+                                        //if (channel == c._name) channels_list.DrawItem += new DrawItemEventHandler(channels_list_DrawItem);
+
+                                    }
+                                    Console.WriteLine("I got that far");
+                                    if (notachannel == true)
+                                    {
+                                        if (current._clientsprivate._private_list.Count == 0) AddClient(channel, false);
+                                        else
+                                        {
+                                            string channeltoadd = null;
+                                            foreach (Private p in current._clientsprivate._private_list)
+                                            {
+                                                if (channel != p._name && channel != current._name.ToUpper())
+                                                {
+                                                    //private_list.Items.Add(channel);
+                                                    channeltoadd = channel;
+
+                                                }
+                                            }
+                                            if (channeltoadd != null) AddClient(channeltoadd, false);
+                                        }
+                                    }
+
                                 }
                             }
-                        }
-                        chan = 0;
 
+                            else if (acces_private.Checked)
+                            {
+                                if (Equals(channel.Trim(), current._currentprivate._name) == true)
+                                {
+                                    Console.WriteLine("Got it ...");
+                                    this.AppendText(data, false);
+                                }
+                                else
+                                {
+                                    bool notachannel = true;
+                                    foreach (String names in gchannels)
+                                    {
+                                        if (names == channel) notachannel = false;
+                                    }
+                                    Console.WriteLine("I got that far");
+                                    if (notachannel == true)
+                                    {
+                                        if (current._clientsprivate._private_list.Count == 0) AddClient(channel, false);
+                                        else
+                                        {
+                                            string channeltoadd = null;
+                                            foreach (Private p in current._clientsprivate._private_list)
+                                            {
+                                                if (channel != p._name && channel != current._name.ToUpper())
+                                                {
+                                                    channeltoadd = channel;
+                                                    //private_list.Items.Add(channel);
+                                                }
+                                            }
+                                            if (channeltoadd != null) AddClient(channeltoadd, false);
+
+                                        }
+                                    }
+                                }
+                            }
+                            chan = 0;
+                            break;
                     }
+
                 }
                
             }
@@ -331,8 +341,6 @@ namespace Chat_Server
         //--------------------------------------------------------------------------------------------------------
 
 
-
-            // Send function usind the buffer first then the client stream to write on it 
         private void send_Click(object sender, EventArgs e)
         {
             if (send_message.Text == "exit")
@@ -348,10 +356,7 @@ namespace Chat_Server
 
                     }
                 }
-                /*client.Client.Shutdown(SocketShutdown.Send);
-                thread.Join();
-                ns.Close();
-                client.Close();*/
+
                 Console.WriteLine("disconnect from server!!");
             }
 
@@ -384,6 +389,9 @@ namespace Chat_Server
         }
 
         //Function doing basically the same thing that the one above but i use it for spleciale requests
+
+
+        // Send function usind the buffer first then the client stream to write on it 
 
         private void SendMessages(string data, NetworkStream ns)
         {
